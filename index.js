@@ -10,43 +10,50 @@ updated_at: null
 
 let lightCommand = 0;
 
-const html = `
+/* =========================================================
+DASHBOARD HTML
+========================================================= */
 
-<!DOCTYPE html>
+const html = String.raw`<!DOCTYPE html>
 
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP32 Smart Home</title>
 
-```
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+   content="width=device-width, initial-scale=1.0">
+
+<title>ESP32 Smart Home</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #0f172a;
-        color: white;
-        margin: 0;
-    }
 
-    .card {
-        background: #1e293b;
-        border: 1px solid #334155;
-        border-radius: 18px;
-    }
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: white;
+    margin: 0;
+}
 
-    button {
-        cursor: pointer;
-        transition: 0.15s;
-    }
+.card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 18px;
+}
 
-    button:active {
-        transform: scale(0.96);
-    }
+button {
+    cursor: pointer;
+    transition: 0.15s;
+}
+
+button:active {
+    transform: scale(0.96);
+}
+
 </style>
-```
 
 </head>
 
@@ -54,7 +61,6 @@ const html = `
 
 <div class="max-w-5xl mx-auto p-5">
 
-```
 <h1 class="text-3xl font-bold mb-1">
     ESP32 Smart Home
 </h1>
@@ -63,173 +69,208 @@ const html = `
     Monitoring & kontrol rumah pintar
 </p>
 
-
 <!-- STATUS ESP32 -->
 
 <div class="card p-5 mb-5">
 
-    <div class="flex items-center justify-between">
+```
+<div class="flex items-center justify-between">
 
-        <div>
+    <div>
 
-            <p class="text-sm text-slate-400">
-                Status ESP32
-            </p>
+        <p class="text-sm text-slate-400">
+            Status ESP32
+        </p>
 
-            <p id="deviceStatus"
-               class="text-xl font-bold text-yellow-400">
-                MENUNGGU ESP32
-            </p>
+        <p id="deviceStatus"
+           class="text-xl font-bold text-yellow-400">
 
-        </div>
+            MENUNGGU ESP32
 
-        <div id="statusDot"
-             class="w-4 h-4 rounded-full bg-yellow-500">
-        </div>
+        </p>
 
     </div>
 
-</div>
 
+    <div id="statusDot"
+         class="w-4 h-4 rounded-full bg-yellow-500">
+    </div>
+
+</div>
+```
+
+</div>
 
 <!-- SENSOR -->
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
 
-    <div class="card p-6">
+```
+<!-- SUHU -->
 
-        <p class="text-slate-400">
-            Suhu
-        </p>
+<div class="card p-6">
 
-        <div class="flex items-end gap-2 mt-2">
+    <p class="text-slate-400">
+        Suhu
+    </p>
 
-            <span id="temperature"
-                  class="text-5xl font-bold">
-                --
-            </span>
+    <div class="flex items-end gap-2 mt-2">
 
-            <span class="text-slate-400 mb-2">
-                °C
-            </span>
+        <span id="temperature"
+              class="text-5xl font-bold">
 
-        </div>
+            --
 
-    </div>
+        </span>
 
-
-    <div class="card p-6">
-
-        <p class="text-slate-400">
-            Kelembapan
-        </p>
-
-        <div class="flex items-end gap-2 mt-2">
-
-            <span id="humidity"
-                  class="text-5xl font-bold">
-                --
-            </span>
-
-            <span class="text-slate-400 mb-2">
-                %
-            </span>
-
-        </div>
+        <span class="text-slate-400 mb-2">
+            °C
+        </span>
 
     </div>
 
 </div>
 
+
+<!-- KELEMBAPAN -->
+
+<div class="card p-6">
+
+    <p class="text-slate-400">
+        Kelembapan
+    </p>
+
+    <div class="flex items-end gap-2 mt-2">
+
+        <span id="humidity"
+              class="text-5xl font-bold">
+
+            --
+
+        </span>
+
+        <span class="text-slate-400 mb-2">
+            %
+        </span>
+
+    </div>
+
+</div>
+```
+
+</div>
 
 <!-- KONTROL LAMPU -->
 
 <div class="card p-6">
 
-    <div class="flex items-center justify-between mb-5">
-
-        <div>
-
-            <p class="text-sm text-slate-400">
-                Kontrol Lampu
-            </p>
-
-            <h2 id="lampStatus"
-                class="text-2xl font-bold text-slate-300">
-                OFF
-            </h2>
-
-        </div>
-
-        <div id="lampIndicator"
-             class="w-12 h-12 rounded-full bg-slate-700">
-        </div>
-
-    </div>
+```
+<div class="flex items-center justify-between mb-5">
 
 
-    <div class="grid grid-cols-2 gap-4">
+    <div>
 
-        <button
-            onclick="setLamp(1)"
-            class="bg-green-600 hover:bg-green-500 rounded-xl py-4 font-bold text-lg">
-
-            NYALAKAN
-
-        </button>
+        <p class="text-sm text-slate-400">
+            Kontrol Lampu
+        </p>
 
 
-        <button
-            onclick="setLamp(0)"
-            class="bg-red-600 hover:bg-red-500 rounded-xl py-4 font-bold text-lg">
+        <h2 id="lampStatus"
+            class="text-2xl font-bold text-slate-300">
 
-            MATIKAN
+            OFF
 
-        </button>
+        </h2>
 
     </div>
 
 
-    <p id="commandStatus"
-       class="text-center text-sm text-slate-400 mt-4">
+    <div id="lampIndicator"
+         class="w-12 h-12 rounded-full bg-slate-700">
+    </div>
 
-        Siap menerima perintah
-
-    </p>
 
 </div>
 
 
-<p id="lastUpdate"
-   class="text-center text-xs text-slate-500 mt-5">
+<div class="grid grid-cols-2 gap-4">
 
-    Belum ada data
+
+    <button
+        onclick="setLamp(1)"
+        class="bg-green-600 hover:bg-green-500 rounded-xl py-4 font-bold text-lg">
+
+        NYALAKAN
+
+    </button>
+
+
+    <button
+        onclick="setLamp(0)"
+        class="bg-red-600 hover:bg-red-500 rounded-xl py-4 font-bold text-lg">
+
+        MATIKAN
+
+    </button>
+
+
+</div>
+
+
+<p id="commandStatus"
+   class="text-center text-sm text-slate-400 mt-4">
+
+    Siap menerima perintah
 
 </p>
 ```
 
 </div>
 
+<p id="lastUpdate"
+   class="text-center text-xs text-slate-500 mt-5">
+
+```
+Belum ada data
+```
+
+</p>
+
+</div>
+
 <script>
+
+
+/* =========================================================
+   UPDATE DASHBOARD
+   ========================================================= */
 
 async function updateDashboard() {
 
     try {
 
-        const response = await fetch("/api/status");
+        const response =
+            await fetch("/api/status");
+
 
         if (!response.ok) {
+
             return;
+
         }
 
-        const data = await response.json();
+
+        const data =
+            await response.json();
 
 
-        document.getElementById("temperature").textContent =
+        document.getElementById("temperature")
+            .textContent =
             data.suhu ?? "--";
 
 
-        document.getElementById("humidity").textContent =
+        document.getElementById("humidity")
+            .textContent =
             data.kelembaban ?? "--";
 
 
@@ -246,6 +287,7 @@ async function updateDashboard() {
 
         if (data.updated_at) {
 
+
             const last =
                 new Date(data.updated_at).getTime();
 
@@ -256,23 +298,33 @@ async function updateDashboard() {
 
             if (age < 5000) {
 
-                status.textContent = "ONLINE";
+
+                status.textContent =
+                    "ONLINE";
+
 
                 status.className =
                     "text-xl font-bold text-green-400";
 
+
                 dot.className =
                     "w-4 h-4 rounded-full bg-green-500";
 
+
             } else {
 
-                status.textContent = "OFFLINE";
+
+                status.textContent =
+                    "OFFLINE";
+
 
                 status.className =
                     "text-xl font-bold text-red-400";
 
+
                 dot.className =
                     "w-4 h-4 rounded-full bg-red-500";
+
 
             }
 
@@ -281,12 +333,15 @@ async function updateDashboard() {
 
         if (data.updated_at) {
 
-            document.getElementById("lastUpdate").textContent =
+
+            document.getElementById("lastUpdate")
+                .textContent =
                 "Update: " +
                 new Date(data.updated_at)
                     .toLocaleTimeString("id-ID");
 
         }
+
 
     } catch (error) {
 
@@ -297,7 +352,12 @@ async function updateDashboard() {
 }
 
 
+/* =========================================================
+   UPDATE LAMPU
+   ========================================================= */
+
 function updateLampUI(value) {
+
 
     const status =
         document.getElementById("lampStatus");
@@ -307,22 +367,34 @@ function updateLampUI(value) {
         document.getElementById("lampIndicator");
 
 
-    if (value === 1 || value === true) {
+    if (
+        value === 1 ||
+        value === true
+    ) {
 
-        status.textContent = "ON";
+
+        status.textContent =
+            "ON";
+
 
         status.className =
             "text-2xl font-bold text-green-400";
 
+
         indicator.className =
             "w-12 h-12 rounded-full bg-yellow-400";
 
+
     } else {
 
-        status.textContent = "OFF";
+
+        status.textContent =
+            "OFF";
+
 
         status.className =
             "text-2xl font-bold text-slate-300";
+
 
         indicator.className =
             "w-12 h-12 rounded-full bg-slate-700";
@@ -332,7 +404,12 @@ function updateLampUI(value) {
 }
 
 
+/* =========================================================
+   KONTROL LAMPU
+   ========================================================= */
+
 async function setLamp(value) {
+
 
     const status =
         document.getElementById("commandStatus");
@@ -340,10 +417,13 @@ async function setLamp(value) {
 
     if (value === 1) {
 
+
         status.textContent =
             "Mengirim perintah ON...";
 
+
     } else {
+
 
         status.textContent =
             "Mengirim perintah OFF...";
@@ -353,13 +433,15 @@ async function setLamp(value) {
 
     try {
 
+
         const response =
             await fetch("/api/light", {
 
                 method: "POST",
 
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type":
+                        "application/json"
                 },
 
                 body: JSON.stringify({
@@ -404,7 +486,9 @@ async function setLamp(value) {
 
         }
 
+
     } catch (error) {
+
 
         status.textContent =
             "Gagal: " +
@@ -415,141 +499,174 @@ async function setLamp(value) {
 }
 
 
-setInterval(updateDashboard, 500);
+/* =========================================================
+   AUTO UPDATE
+   ========================================================= */
+
+setInterval(
+    updateDashboard,
+    500
+);
+
 
 updateDashboard();
+
 
 </script>
 
 </body>
-</html>
-`;
+
+</html>`;
+
+/* =========================================================
+HTTP SERVER
+========================================================= */
 
 function handler(req, res) {
 
 ```
-const url = new URL(
-    req.url,
-    "http://" +
-    (req.headers.host || "localhost")
-);
+const url =
+    new URL(
+        req.url,
+        "http://" +
+        (req.headers.host || "localhost")
+    );
 
 
 const pathname =
     url.pathname;
 
 
-// DASHBOARD
+/* =====================================================
+   DASHBOARD
+   ===================================================== */
 
 if (
     pathname === "/" ||
     pathname === "/index.html"
 ) {
 
+
     res.setHeader(
         "Content-Type",
         "text/html; charset=utf-8"
     );
 
+
     res.statusCode = 200;
+
 
     return res.end(html);
 
 }
 
 
-// ESP32 -> SENSOR
+/* =====================================================
+   ESP32 -> SENSOR
+   POST /api/sensor
+   ===================================================== */
 
 if (
     pathname === "/api/sensor" &&
     req.method === "POST"
 ) {
 
+
     let body = "";
 
 
-    req.on("data", function(chunk) {
+    req.on(
+        "data",
+        function(chunk) {
 
-        body += chunk;
-
-    });
-
-
-    req.on("end", function() {
-
-        try {
-
-            const data =
-                JSON.parse(body);
-
-
-            sensorData = {
-
-                device_id:
-                    data.device_id ||
-                    "ESP32-SMART-HOME",
-
-                suhu:
-                    Number(data.suhu) || 0,
-
-                kelembaban:
-                    Number(data.kelembaban) || 0,
-
-                lampu:
-                    data.lampu ? 1 : 0,
-
-                updated_at:
-                    new Date().toISOString()
-
-            };
-
-
-            res.setHeader(
-                "Content-Type",
-                "application/json"
-            );
-
-
-            res.statusCode = 200;
-
-
-            res.end(
-                JSON.stringify({
-
-                    success: true,
-
-                    data:
-                        sensorData
-
-                })
-            );
-
-
-        } catch (error) {
-
-            res.setHeader(
-                "Content-Type",
-                "application/json"
-            );
-
-
-            res.statusCode = 400;
-
-
-            res.end(
-                JSON.stringify({
-
-                    success: false,
-
-                    error:
-                        "JSON tidak valid"
-
-                })
-            );
+            body += chunk;
 
         }
+    );
 
-    });
+
+    req.on(
+        "end",
+        function() {
+
+
+            try {
+
+
+                const data =
+                    JSON.parse(body);
+
+
+                sensorData = {
+
+                    device_id:
+                        data.device_id ||
+                        "ESP32-SMART-HOME",
+
+                    suhu:
+                        Number(data.suhu) || 0,
+
+                    kelembaban:
+                        Number(data.kelembaban) || 0,
+
+                    lampu:
+                        data.lampu ? 1 : 0,
+
+                    updated_at:
+                        new Date()
+                            .toISOString()
+
+                };
+
+
+                res.setHeader(
+                    "Content-Type",
+                    "application/json"
+                );
+
+
+                res.statusCode = 200;
+
+
+                res.end(
+                    JSON.stringify({
+
+                        success: true,
+
+                        data:
+                            sensorData
+
+                    })
+                );
+
+
+            } catch (error) {
+
+
+                res.setHeader(
+                    "Content-Type",
+                    "application/json"
+                );
+
+
+                res.statusCode = 400;
+
+
+                res.end(
+                    JSON.stringify({
+
+                        success: false,
+
+                        error:
+                            "JSON tidak valid"
+
+                    })
+                );
+
+            }
+
+        }
+    );
 
 
     return;
@@ -557,12 +674,16 @@ if (
 }
 
 
-// STATUS
+/* =====================================================
+   STATUS
+   GET /api/status
+   ===================================================== */
 
 if (
     pathname === "/api/status" &&
     req.method === "GET"
 ) {
+
 
     res.setHeader(
         "Content-Type",
@@ -597,94 +718,107 @@ if (
 }
 
 
-// KONTROL LAMPU
+/* =====================================================
+   DASHBOARD -> LAMPU
+   POST /api/light
+   ===================================================== */
 
 if (
     pathname === "/api/light" &&
     req.method === "POST"
 ) {
 
+
     let body = "";
 
 
-    req.on("data", function(chunk) {
+    req.on(
+        "data",
+        function(chunk) {
 
-        body += chunk;
-
-    });
-
-
-    req.on("end", function() {
-
-        try {
-
-            const data =
-                JSON.parse(body);
-
-
-            const value =
-                data.lampu === 1 ||
-                data.lampu === true ||
-                data.lampu === "1"
-                    ? 1
-                    : 0;
-
-
-            lightCommand =
-                value;
-
-
-            res.setHeader(
-                "Content-Type",
-                "application/json"
-            );
-
-
-            res.statusCode = 200;
-
-
-            res.end(
-                JSON.stringify({
-
-                    success: true,
-
-                    lampu:
-                        lightCommand,
-
-                    message:
-                        value === 1
-                            ? "Lampu ON"
-                            : "Lampu OFF"
-
-                })
-            );
-
-
-        } catch (error) {
-
-            res.setHeader(
-                "Content-Type",
-                "application/json"
-            );
-
-
-            res.statusCode = 400;
-
-
-            res.end(
-                JSON.stringify({
-
-                    success: false,
-
-                    error:
-                        "Perintah tidak valid"
-
-                })
-            );
+            body += chunk;
 
         }
+    );
 
-    });
+
+    req.on(
+        "end",
+        function() {
+
+
+            try {
+
+
+                const data =
+                    JSON.parse(body);
+
+
+                const value =
+                    data.lampu === 1 ||
+                    data.lampu === true ||
+                    data.lampu === "1"
+                        ? 1
+                        : 0;
+
+
+                lightCommand =
+                    value;
+
+
+                res.setHeader(
+                    "Content-Type",
+                    "application/json"
+                );
+
+
+                res.statusCode = 200;
+
+
+                res.end(
+                    JSON.stringify({
+
+                        success: true,
+
+                        lampu:
+                            lightCommand,
+
+                        message:
+                            value === 1
+                                ? "Lampu ON"
+                                : "Lampu OFF"
+
+                    })
+                );
+
+
+            } catch (error) {
+
+
+                res.setHeader(
+                    "Content-Type",
+                    "application/json"
+                );
+
+
+                res.statusCode = 400;
+
+
+                res.end(
+                    JSON.stringify({
+
+                        success: false,
+
+                        error:
+                            "Perintah tidak valid"
+
+                    })
+                );
+
+            }
+
+        }
+    );
 
 
     return;
@@ -692,12 +826,16 @@ if (
 }
 
 
-// ESP32 -> COMMAND
+/* =====================================================
+   ESP32 -> COMMAND
+   GET /api/command
+   ===================================================== */
 
 if (
     pathname === "/api/command" &&
     req.method === "GET"
 ) {
+
 
     res.setHeader(
         "Content-Type",
@@ -712,7 +850,9 @@ if (
         JSON.stringify({
 
             device_id:
-                url.searchParams.get("device_id") ||
+                url.searchParams.get(
+                    "device_id"
+                ) ||
                 "ESP32-SMART-HOME",
 
             lampu:
@@ -724,7 +864,9 @@ if (
 }
 
 
-// 404
+/* =====================================================
+   404
+   ===================================================== */
 
 res.setHeader(
     "Content-Type",
@@ -749,6 +891,10 @@ res.end(
 
 }
 
+/* =========================================================
+JALANKAN SERVER LOKAL
+========================================================= */
+
 if (require.main === module) {
 
 ```
@@ -757,14 +903,17 @@ const PORT =
 
 
 http.createServer(handler)
-    .listen(PORT, function() {
+    .listen(
+        PORT,
+        function() {
 
-        console.log(
-            "ESP32 Smart Home berjalan di http://localhost:" +
-            PORT
-        );
+            console.log(
+                "ESP32 Smart Home berjalan di http://localhost:" +
+                PORT
+            );
 
-    });
+        }
+    );
 ```
 
 }
