@@ -1,6 +1,4 @@
-const http = require("http");
-
-let sensorData = {
+const sensorData = {
 device_id: "ESP32-SMART-HOME",
 suhu: 0,
 kelembaban: 0,
@@ -10,395 +8,410 @@ updated_at: null
 
 let lightCommand = 0;
 
-/* =========================================================
-HTML DASHBOARD
-========================================================= */
+const html = String.raw`<!DOCTYPE html>
 
-const html = [
-`<!DOCTYPE html>`,
-`<html lang="id">`,
-`<head>`,
-`<meta charset="UTF-8">`,
-`<meta name="viewport" content="width=device-width, initial-scale=1.0">`,
-`<title>ESP32 Smart Home</title>`,
-`<script src="https://cdn.tailwindcss.com"></script>`,
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 Smart Home</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  margin: 0;
+}
+.card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 18px;
+}
+button {
+  cursor: pointer;
+  transition: 0.15s;
+}
+button:active {
+  transform: scale(0.96);
+}
+</style>
+</head>
 
-`<style>`,
-`body { font-family: Arial, sans-serif; background: #0f172a; color: white; margin: 0; }`,
-`.card { background: #1e293b; border: 1px solid #334155; border-radius: 18px; }`,
-`button { cursor: pointer; transition: 0.15s; }`,
-`button:active { transform: scale(0.96); }`,
-`</style>`,
+<body>
 
-`</head>`,
-`<body>`,
+<div class="max-w-5xl mx-auto p-5">
 
-`<div class="max-w-5xl mx-auto p-5">`,
+<h1 class="text-3xl font-bold mb-1">ESP32 Smart Home</h1>
+<p class="text-slate-400 mb-6">Monitoring & kontrol rumah pintar</p>
 
-`<h1 class="text-3xl font-bold mb-1">ESP32 Smart Home</h1>`,
-`<p class="text-slate-400 mb-6">Monitoring & kontrol rumah pintar</p>`,
+<div class="card p-5 mb-5">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-sm text-slate-400">Status ESP32</p>
+      <p id="deviceStatus" class="text-xl font-bold text-yellow-400">
+        MENUNGGU ESP32
+      </p>
+    </div>
+    <div id="statusDot" class="w-4 h-4 rounded-full bg-yellow-500"></div>
+  </div>
+</div>
 
-`<div class="card p-5 mb-5">`,
-`<div class="flex items-center justify-between">`,
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
 
-`<div>`,
-`<p class="text-sm text-slate-400">Status ESP32</p>`,
-`<p id="deviceStatus" class="text-xl font-bold text-yellow-400">MENUNGGU ESP32</p>`,
-`</div>`,
+<div class="card p-6">
+  <p class="text-slate-400">Suhu</p>
+  <div class="flex items-end gap-2 mt-2">
+    <span id="temperature" class="text-5xl font-bold">--</span>
+    <span class="text-slate-400 mb-2">°C</span>
+  </div>
+</div>
 
-`<div id="statusDot" class="w-4 h-4 rounded-full bg-yellow-500"></div>`,
+<div class="card p-6">
+  <p class="text-slate-400">Kelembapan</p>
+  <div class="flex items-end gap-2 mt-2">
+    <span id="humidity" class="text-5xl font-bold">--</span>
+    <span class="text-slate-400 mb-2">%</span>
+  </div>
+</div>
 
-`</div>`,
-`</div>`,
+</div>
 
-`<div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">`,
+<div class="card p-6">
 
-`<div class="card p-6">`,
-`<p class="text-slate-400">Suhu</p>`,
-`<div class="flex items-end gap-2 mt-2">`,
-`<span id="temperature" class="text-5xl font-bold">--</span>`,
-`<span class="text-slate-400 mb-2">°C</span>`,
-`</div>`,
-`</div>`,
+<div class="flex items-center justify-between mb-5">
+  <div>
+    <p class="text-sm text-slate-400">Kontrol Lampu</p>
+    <h2 id="lampStatus" class="text-2xl font-bold text-slate-300">
+      OFF
+    </h2>
+  </div>
 
-`<div class="card p-6">`,
-`<p class="text-slate-400">Kelembapan</p>`,
-`<div class="flex items-end gap-2 mt-2">`,
-`<span id="humidity" class="text-5xl font-bold">--</span>`,
-`<span class="text-slate-400 mb-2">%</span>`,
-`</div>`,
-`</div>`,
+  <div id="lampIndicator"
+       class="w-12 h-12 rounded-full bg-slate-700">
+  </div>
+</div>
 
-`</div>`,
+<div class="grid grid-cols-2 gap-4">
 
-`<div class="card p-6">`,
+<button
+onclick="setLamp(1)"
+class="bg-green-600 hover:bg-green-500 rounded-xl py-4 font-bold text-lg">
+NYALAKAN </button>
 
-`<div class="flex items-center justify-between mb-5">`,
+<button
+onclick="setLamp(0)"
+class="bg-red-600 hover:bg-red-500 rounded-xl py-4 font-bold text-lg">
+MATIKAN </button>
 
-`<div>`,
-`<p class="text-sm text-slate-400">Kontrol Lampu</p>`,
-`<h2 id="lampStatus" class="text-2xl font-bold text-slate-300">OFF</h2>`,
-`</div>`,
+</div>
 
-`<div id="lampIndicator" class="w-12 h-12 rounded-full bg-slate-700"></div>`,
+<p id="commandStatus"
+   class="text-center text-sm text-slate-400 mt-4">
+  Siap menerima perintah
+</p>
 
-`</div>`,
+</div>
 
-`<div class="grid grid-cols-2 gap-4">`,
+<p id="lastUpdate"
+   class="text-center text-xs text-slate-500 mt-5">
+  Belum ada data
+</p>
 
-`<button onclick="setLamp(1)" class="bg-green-600 hover:bg-green-500 rounded-xl py-4 font-bold text-lg">NYALAKAN</button>`,
+</div>
 
-`<button onclick="setLamp(0)" class="bg-red-600 hover:bg-red-500 rounded-xl py-4 font-bold text-lg">MATIKAN</button>`,
+<script>
 
-`</div>`,
+async function updateDashboard() {
+  try {
+    const response = await fetch("/api/status");
 
-`<p id="commandStatus" class="text-center text-sm text-slate-400 mt-4">Siap menerima perintah</p>`,
+    if (!response.ok) return;
 
-`</div>`,
+    const data = await response.json();
 
-`<p id="lastUpdate" class="text-center text-xs text-slate-500 mt-5">Belum ada data</p>`,
+    document.getElementById("temperature").textContent =
+      data.suhu ?? "--";
 
-`</div>`,
+    document.getElementById("humidity").textContent =
+      data.kelembaban ?? "--";
 
-`<script>`,
+    updateLampUI(data.lampu);
 
-`async function updateDashboard() {`,
-`    try {`,
-`        const response = await fetch("/api/status");`,
-`        if (!response.ok) return;`,
+    const status = document.getElementById("deviceStatus");
+    const dot = document.getElementById("statusDot");
 
-`        const data = await response.json();`,
+    if (data.updated_at) {
+      const last = new Date(data.updated_at).getTime();
+      const age = Date.now() - last;
 
-`        document.getElementById("temperature").textContent = data.suhu ?? "--";`,
-`        document.getElementById("humidity").textContent = data.kelembaban ?? "--";`,
+      if (age < 5000) {
+        status.textContent = "ONLINE";
+        status.className =
+          "text-xl font-bold text-green-400";
 
-`        updateLampUI(data.lampu);`,
+        dot.className =
+          "w-4 h-4 rounded-full bg-green-500";
+      } else {
+        status.textContent = "OFFLINE";
+        status.className =
+          "text-xl font-bold text-red-400";
 
-`        const status = document.getElementById("deviceStatus");`,
-`        const dot = document.getElementById("statusDot");`,
+        dot.className =
+          "w-4 h-4 rounded-full bg-red-500";
+      }
+    }
 
-`        if (data.updated_at) {`,
-`            const last = new Date(data.updated_at).getTime();`,
-`            const age = Date.now() - last;`,
+    if (data.updated_at) {
+      document.getElementById("lastUpdate").textContent =
+        "Update: " +
+        new Date(data.updated_at).toLocaleTimeString("id-ID");
+    }
 
-`            if (age < 5000) {`,
-`                status.textContent = "ONLINE";`,
-`                status.className = "text-xl font-bold text-green-400";`,
-`                dot.className = "w-4 h-4 rounded-full bg-green-500";`,
-`            } else {`,
-`                status.textContent = "OFFLINE";`,
-`                status.className = "text-xl font-bold text-red-400";`,
-`                dot.className = "w-4 h-4 rounded-full bg-red-500";`,
-`            }`,
-`        }`,
+  } catch (error) {
+    console.log(error);
+  }
+}
 
-`        if (data.updated_at) {`,
-`            document.getElementById("lastUpdate").textContent =`,
-`                "Update: " + new Date(data.updated_at).toLocaleTimeString("id-ID");`,
-`        }`,
+function updateLampUI(value) {
 
-`    } catch (error) {`,
-`        console.log(error);`,
-`    }`,
-`}`,
+  const status =
+    document.getElementById("lampStatus");
 
-`function updateLampUI(value) {`,
+  const indicator =
+    document.getElementById("lampIndicator");
 
-`    const status = document.getElementById("lampStatus");`,
-`    const indicator = document.getElementById("lampIndicator");`,
+  if (value === 1 || value === true) {
 
-`    if (value === 1 || value === true) {`,
+    status.textContent = "ON";
 
-`        status.textContent = "ON";`,
-`        status.className = "text-2xl font-bold text-green-400";`,
-`        indicator.className = "w-12 h-12 rounded-full bg-yellow-400";`,
+    status.className =
+      "text-2xl font-bold text-green-400";
 
-`    } else {`,
+    indicator.className =
+      "w-12 h-12 rounded-full bg-yellow-400";
 
-`        status.textContent = "OFF";`,
-`        status.className = "text-2xl font-bold text-slate-300";`,
-`        indicator.className = "w-12 h-12 rounded-full bg-slate-700";`,
+  } else {
 
-`    }`,
-`}`,
+    status.textContent = "OFF";
 
-`async function setLamp(value) {`,
+    status.className =
+      "text-2xl font-bold text-slate-300";
 
-`    const status = document.getElementById("commandStatus");`,
+    indicator.className =
+      "w-12 h-12 rounded-full bg-slate-700";
+  }
+}
 
-`    status.textContent = value === 1`,
-`        ? "Mengirim perintah ON..."`,
-`        : "Mengirim perintah OFF...";`,
+async function setLamp(value) {
 
-`    try {`,
+  const status =
+    document.getElementById("commandStatus");
 
-`        const response = await fetch("/api/light", {`,
-`            method: "POST",`,
-`            headers: {`,
-`                "Content-Type": "application/json"`,
-`            },`,
-`            body: JSON.stringify({`,
-`                device_id: "ESP32-SMART-HOME",`,
-`                lampu: value`,
-`            })`,
-`        });`,
+  status.textContent =
+    value === 1
+      ? "Mengirim perintah ON..."
+      : "Mengirim perintah OFF...";
 
-`        const data = await response.json();`,
+  try {
 
-`        if (!response.ok) {`,
-`            throw new Error(data.error || "Gagal mengirim perintah");`,
-`        }`,
+    const response =
+      await fetch("/api/light", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          device_id: "ESP32-SMART-HOME",
+          lampu: value
+        })
+      });
 
-`        updateLampUI(value);`,
+    const data = await response.json();
 
-`        status.textContent = value === 1`,
-`            ? "Lampu diperintahkan ON"`,
-`            : "Lampu diperintahkan OFF";`,
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Gagal mengirim perintah"
+      );
+    }
 
-`    } catch (error) {`,
-`        status.textContent = "Gagal: " + error.message;`,
-`    }`,
-`}`,
+    updateLampUI(value);
 
-`setInterval(updateDashboard, 500);`,
-`updateDashboard();`,
+    status.textContent =
+      value === 1
+        ? "Lampu diperintahkan ON"
+        : "Lampu diperintahkan OFF";
 
-`</script>`,
-`</body>`,
-`</html>`
-].join("\n");
+  } catch (error) {
 
-/* =========================================================
-HANDLER
-========================================================= */
+    status.textContent =
+      "Gagal: " + error.message;
+  }
+}
 
-function handler(req, res) {
+setInterval(updateDashboard, 500);
 
-```
+updateDashboard();
+
+</script>
+
+</body>
+</html>`;
+
+function sendJSON(res, statusCode, data) {
+res.statusCode = statusCode;
+res.setHeader("Content-Type", "application/json");
+res.end(JSON.stringify(data));
+}
+
+module.exports = async function handler(req, res) {
+
 const url = new URL(
-    req.url,
-    "https://" + (req.headers.host || "localhost")
+req.url,
+"https://" + (req.headers.host || "localhost")
 );
 
 const pathname = url.pathname;
 
-
-/* DASHBOARD */
-
 if (
-    pathname === "/" ||
-    pathname === "/index.html"
+pathname === "/" ||
+pathname === "/index.html"
 ) {
-
-    res.setHeader(
-        "Content-Type",
-        "text/html; charset=utf-8"
-    );
-
-    return res.status(200).send(html);
+res.statusCode = 200;
+res.setHeader(
+"Content-Type",
+"text/html; charset=utf-8"
+);
+return res.end(html);
 }
 
-
-/* ESP32 -> SENSOR */
-
 if (
-    pathname === "/api/sensor" &&
-    req.method === "POST"
+pathname === "/api/status" &&
+req.method === "GET"
 ) {
 
-    try {
-
-        let body = req.body;
-
-        if (typeof body === "string") {
-            body = JSON.parse(body);
-        }
-
-        sensorData = {
-            device_id:
-                body.device_id ||
-                "ESP32-SMART-HOME",
-
-            suhu:
-                Number(body.suhu) || 0,
-
-            kelembaban:
-                Number(body.kelembaban) || 0,
-
-            lampu:
-                body.lampu ? 1 : 0,
-
-            updated_at:
-                new Date().toISOString()
-        };
-
-        return res.status(200).json({
-            success: true,
-            data: sensorData
-        });
-
-    } catch (error) {
-
-        return res.status(400).json({
-            success: false,
-            error: "JSON tidak valid"
-        });
-    }
-}
-
-
-/* STATUS */
-
-if (
-    pathname === "/api/status" &&
-    req.method === "GET"
-) {
-
-    return res.status(200).json({
-
-        device_id:
-            sensorData.device_id,
-
-        suhu:
-            sensorData.suhu,
-
-        kelembaban:
-            sensorData.kelembaban,
-
-        lampu:
-            lightCommand,
-
-        updated_at:
-            sensorData.updated_at
-
-    });
-}
-
-
-/* KONTROL LAMPU */
-
-if (
-    pathname === "/api/light" &&
-    req.method === "POST"
-) {
-
-    try {
-
-        let body = req.body;
-
-        if (typeof body === "string") {
-            body = JSON.parse(body);
-        }
-
-        const value =
-            body.lampu === 1 ||
-            body.lampu === true ||
-            body.lampu === "1"
-                ? 1
-                : 0;
-
-        lightCommand = value;
-
-        return res.status(200).json({
-
-            success: true,
-
-            lampu:
-                lightCommand,
-
-            message:
-                value === 1
-                    ? "Lampu ON"
-                    : "Lampu OFF"
-
-        });
-
-    } catch (error) {
-
-        return res.status(400).json({
-
-            success: false,
-
-            error:
-                "Perintah tidak valid"
-
-        });
-    }
-}
-
-
-/* ESP32 -> COMMAND */
-
-if (
-    pathname === "/api/command" &&
-    req.method === "GET"
-) {
-
-    return res.status(200).json({
-
-        device_id:
-            url.searchParams.get("device_id") ||
-            "ESP32-SMART-HOME",
-
-        lampu:
-            lightCommand
-
-    });
-}
-
-
-/* 404 */
-
-return res.status(404).json({
-
-    success: false,
-
-    error:
-        "Endpoint tidak ditemukan"
-
+```
+return sendJSON(res, 200, {
+  device_id: sensorData.device_id,
+  suhu: sensorData.suhu,
+  kelembaban: sensorData.kelembaban,
+  lampu: lightCommand,
+  updated_at: sensorData.updated_at
 });
 ```
 
 }
 
-module.exports = handler;
+if (
+pathname === "/api/command" &&
+req.method === "GET"
+) {
+
+```
+return sendJSON(res, 200, {
+  device_id:
+    url.searchParams.get("device_id") ||
+    "ESP32-SMART-HOME",
+
+  lampu: lightCommand
+});
+```
+
+}
+
+if (
+pathname === "/api/light" &&
+req.method === "POST"
+) {
+
+```
+let body = "";
+
+for await (const chunk of req) {
+  body += chunk;
+}
+
+try {
+
+  const data = JSON.parse(body);
+
+  lightCommand =
+    data.lampu === 1 ||
+    data.lampu === true ||
+    data.lampu === "1"
+      ? 1
+      : 0;
+
+  return sendJSON(res, 200, {
+    success: true,
+    lampu: lightCommand,
+    message:
+      lightCommand === 1
+        ? "Lampu ON"
+        : "Lampu OFF"
+  });
+
+} catch (error) {
+
+  return sendJSON(res, 400, {
+    success: false,
+    error: "Perintah tidak valid"
+  });
+}
+```
+
+}
+
+if (
+pathname === "/api/sensor" &&
+req.method === "POST"
+) {
+
+```
+let body = "";
+
+for await (const chunk of req) {
+  body += chunk;
+}
+
+try {
+
+  const data = JSON.parse(body);
+
+  sensorData.device_id =
+    data.device_id ||
+    "ESP32-SMART-HOME";
+
+  sensorData.suhu =
+    Number(data.suhu) || 0;
+
+  sensorData.kelembaban =
+    Number(data.kelembaban) || 0;
+
+  sensorData.lampu =
+    data.lampu ? 1 : 0;
+
+  sensorData.updated_at =
+    new Date().toISOString();
+
+  return sendJSON(res, 200, {
+    success: true,
+    data: sensorData
+  });
+
+} catch (error) {
+
+  return sendJSON(res, 400, {
+    success: false,
+    error: "JSON tidak valid"
+  });
+}
+```
+
+}
+
+return sendJSON(res, 404, {
+success: false,
+error: "Endpoint tidak ditemukan"
+});
+};
